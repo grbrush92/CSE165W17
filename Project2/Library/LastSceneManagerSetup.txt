@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/backupSave.unity
+- path: D:/GarrettMaxwellCSE165/FinalProject/ICBING/Assets/ICBING.unity
   isLoaded: 1
   isActive: 1
