@@ -6,7 +6,8 @@ using System.IO;
 using UnityEditor;
 
 
-public class HandRadial : MonoBehaviour {
+public class HandRadial : MonoBehaviour
+{
 
     public OVRInput.Controller lHand;
     public OVRInput.Controller rHand;
@@ -25,20 +26,26 @@ public class HandRadial : MonoBehaviour {
     bool grabLt = false;
     bool grabY = false;
     bool grabB = false;
+    private Quaternion lastRotation, currentRotation;
 
     private GameObject grabbedObj;
 
     // Use this for initialization
-    void Start() {
+    void Start()
+    {
 
     }
 
     // Update is called once per frame
-    void Update() {
-
+    void Update()
+    {
+        if (grabbedObj != null)
+        {
+            lastRotation = currentRotation;
+            currentRotation = grabbedObj.transform.rotation;
+        }
         ControllerInput();
         gogo();
-
     }
 
     void ControllerInput()
@@ -48,23 +55,13 @@ public class HandRadial : MonoBehaviour {
         Rt = OVRInput.Get(OVRInput.RawButton.RIndexTrigger);
         Lt = OVRInput.Get(OVRInput.RawButton.LIndexTrigger);
 
-        if (B && !grabB)
+        if (B)
         {
-            //Debug.Log("grabbing");
-            grabStuff();
-            //if (!grabB)
-            //{
-            //    grabB = true;
-            //    Debug.Log("B pressed");
-            //    grabStuff();
-            //}
-
+            grabB = true;
         }
         else
         {
-            dropStuff();
-            //grabB = false;
-            
+            grabB = false;
         }
 
         if (Y)
@@ -86,14 +83,20 @@ public class HandRadial : MonoBehaviour {
         if (Rt)
         {
             if (!grabRt)
+                grabStuff();
+            else if (grabRt)
             {
-                grabRt = true;
-                Debug.Log("Rt pressed");
+                if (grabbedObj != null)
+                {
+                    grabbedObj.transform.position = selector.transform.position;
+                    grabbedObj.transform.rotation = selector.transform.rotation;
+                }
             }
 
         }
         else
         {
+            dropStuff();
             grabRt = false;
         }
 
@@ -102,9 +105,7 @@ public class HandRadial : MonoBehaviour {
             if (!grabLt)
             {
                 grabLt = true;
-                Debug.Log("Lt pressed");
             }
-
         }
         else
         {
@@ -114,14 +115,11 @@ public class HandRadial : MonoBehaviour {
 
     void gogo()
     {
-        Vector3 handPos = cam.rightHandAnchor.transform.position;
-        Vector3 dir = cam.rightHandAnchor.transform.position - cam.rightHandAnchor.forward;
         Vector3 dist = cam.rightHandAnchor.transform.position - cam.centerEyeAnchor.transform.position;
-
         float distance2 = Vector3.Magnitude(dist);
-        if (distance2 > 0.45f)
+        if (distance2 > 0.65f)
         {
-            selector.transform.position = cam.rightHandAnchor.transform.position + (dist * Mathf.Pow((distance2 - 0.45f) * 10, 2));
+            selector.transform.position = cam.rightHandAnchor.transform.position + (dist * Mathf.Pow((distance2 - 0.65f) * 25, 2));
         }
         else
         {
@@ -132,9 +130,9 @@ public class HandRadial : MonoBehaviour {
 
     void grabStuff()
     {
-        grabB = true;
+        grabRt = true;
         RaycastHit[] hits;
-        hits = Physics.SphereCastAll(selector.transform.position,selectionRadius,selector.transform.forward, 0f, grabMask);
+        hits = Physics.SphereCastAll(selector.transform.position, selectionRadius, selector.transform.forward, 0f, grabMask);
 
         if (hits.Length > 0)
         {
@@ -158,30 +156,31 @@ public class HandRadial : MonoBehaviour {
                 //grabbedObj = hits[closest].transform.gameObject;
                 if (!grabbedObj.GetComponent<Rigidbody>().isKinematic)
                     grabbedObj.GetComponent<Rigidbody>().isKinematic = true;
-                
                 //grabbedObj.transform.parent = cam.rightHandAnchor.transform;
             }
-
         }
-        if (grabbedObj != null)
-        {
-            grabbedObj.transform.position = selector.transform.position;
-            grabbedObj.transform.rotation = selector.transform.rotation;
-        }
-        
     }
 
     void dropStuff()
     {
-        if (grabB && (grabbedObj != null))
+        if (grabRt && (grabbedObj != null))
         {
-           // grabbedObj.transform.parent = null;
+            // grabbedObj.transform.parent = null;
             grabbedObj.GetComponent<Rigidbody>().isKinematic = false;
             //print(OVRInput.GetLocalControllerVelocity(controller));
-            grabbedObj.GetComponent<Rigidbody>().velocity = OVRInput.GetLocalControllerVelocity(rHand);
+            grabbedObj.GetComponent<Rigidbody>().velocity = OVRInput.GetLocalControllerVelocity(rHand) * 2;
+            grabbedObj.GetComponent<Rigidbody>().angularVelocity = getAngularVelocity();
+            //grabbedObj.GetComponent<Rigidbody>().angularVelocity = OVRInput.GetLocalControllerAngularVelocity(rHand);
+            //Debug.Log(OVRInput.GetLocalControllerAngularVelocity(rHand));
             //grabbedObj = storeGrabbedObj;
             grabbedObj = null;
         }
-        grabB = false;
+        //grabRt = false;
+    }
+
+    Vector3 getAngularVelocity()
+    {
+        Quaternion delta = currentRotation * Quaternion.Inverse(lastRotation);
+        return new Vector3(Mathf.DeltaAngle(0, delta.eulerAngles.x), Mathf.DeltaAngle(0, delta.eulerAngles.y), Mathf.DeltaAngle(0, delta.eulerAngles.z));
     }
 }
