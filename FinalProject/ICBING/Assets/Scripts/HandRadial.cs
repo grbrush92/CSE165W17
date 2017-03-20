@@ -11,6 +11,7 @@ public class HandRadial : MonoBehaviour
 
     public OVRInput.Controller lHand;
     public OVRInput.Controller rHand;
+    public GameObject player;
     //public OVRInput.Controller controller;
     public OVRCameraRig cam;
     public OvrAvatar avatar;
@@ -21,6 +22,9 @@ public class HandRadial : MonoBehaviour
     public LineRenderer lzr;
     public GameObject BowlingBall;
     public GameObject BasketBall;
+    public SpawnPins spScript;
+    public GameObject cursor;
+    private GameObject tpCursor;
     bool B = false;
     bool Y = false;
     bool Rt = false;
@@ -30,6 +34,8 @@ public class HandRadial : MonoBehaviour
     bool grabY = false;
     bool grabB = false;
     bool spawn = false;
+    bool hover = false;
+    bool teleported = false;
     private Quaternion lastRotation, currentRotation;
     private float maxCursorDistance = 0.2f;
     GameObject lastObj = null;
@@ -41,6 +47,8 @@ public class HandRadial : MonoBehaviour
     void Start()
     {
         lzr.enabled = false;
+        tpCursor = Instantiate(cursor);
+        tpCursor.SetActive(false);
     }
 
     // Update is called once per frame
@@ -49,7 +57,8 @@ public class HandRadial : MonoBehaviour
         if (grabbedObj != null)
         {
             lastRotation = currentRotation;
-            currentRotation = grabbedObj.transform.rotation;
+            currentRotation = cam.rightHandAnchor.transform.rotation;
+            //currentRotation = OVRInput.GetLocalControllerRotation(rHand);
         }
         ControllerInput();
         ControllerOutput();
@@ -65,10 +74,19 @@ public class HandRadial : MonoBehaviour
 
         if (B)
         {
-            grabB = true;
+            if (!grabB)
+            {
+                grabB = true;
+                //selector.SetActive(true);
+            }
+            else
+            {
+                //selector.SetActive(false);
+            }
         }
         else
         {
+            selector.SetActive(false);
             grabB = false;
         }
 
@@ -90,7 +108,7 @@ public class HandRadial : MonoBehaviour
 
         if (Rt)
         {
-            if (!grabRt)
+            if (!grabRt && !Lt)
                 grabStuff();
             else if (grabRt)
             {
@@ -107,17 +125,29 @@ public class HandRadial : MonoBehaviour
             dropStuff();
             grabRt = false;
             spawn = false;
+            teleported = false;
         }
 
         if (Lt)
         {
             if (!grabLt)
             {
+                
                 grabLt = true;
+                //tpCursor.SetActive(true);
+                //teleport();
+                //spScript.removePins();
+                //spScript.spawnPins();
+            }
+            else if (grabLt && Rt)
+            {
+                if (!teleported)
+                    teleport();
             }
         }
         else
         {
+            tpCursor.SetActive(false);
             grabLt = false;
         }
     }
@@ -138,6 +168,16 @@ public class HandRadial : MonoBehaviour
             selector.SetActive(false);
         }
         selector.transform.rotation = cam.rightHandAnchor.transform.rotation;
+        //if (grabB)
+        //{
+
+        //}
+        //else
+        //{
+        //    selector.transform.position = cam.rightHandAnchor.transform.position;
+        //    selector.transform.rotation = cam.rightHandAnchor.transform.rotation;
+        //}
+
     }
 
     void grabStuff()
@@ -160,7 +200,11 @@ public class HandRadial : MonoBehaviour
 
             if ((hits[closest].transform.gameObject.tag == "Grabbable") && (grabbedObj == null))
             {
-                if (hits[closest].transform.root == null)
+                if (hits[closest].transform.name == "Bowling_Pin_HighRez")
+                {
+                    grabbedObj = hits[closest].transform.gameObject;
+                }
+                else if (hits[closest].transform.root == null)
                     grabbedObj = hits[closest].transform.gameObject;
                 else
                     grabbedObj = hits[closest].transform.root.transform.gameObject;
@@ -189,7 +233,7 @@ public class HandRadial : MonoBehaviour
 
     void ControllerOutput()
     {
-        
+
         if (grabY)
         {
             selector.SetActive(false);
@@ -204,13 +248,13 @@ public class HandRadial : MonoBehaviour
 
                 if (hit.collider.gameObject.tag == "BowlingBall")
                 {
-                    
+
                     lastObj = hit.collider.gameObject;
                     if (lastObj != null)
                     {
                         lastObj.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
                     }
-                    hit.collider.gameObject.transform.localScale = new Vector3(0.2f,0.2f,0.2f);
+                    hit.collider.gameObject.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
                     if (grabRt)
                     {
                         if (spawn == false)
@@ -218,14 +262,11 @@ public class HandRadial : MonoBehaviour
                             Instantiate(BowlingBall, ballSpawn, new Quaternion(0, 0, 0, 0));
                             spawn = true;
                         }
-                            
-                        Debug.Log("bowlingball");
-                        
                     }
                 }
-                if (hit.collider.gameObject.tag == "BasketBall")
+                else if (hit.collider.gameObject.tag == "BasketBall")
                 {
-                    
+
                     lastObj = hit.collider.gameObject;
                     if (lastObj != null)
                     {
@@ -239,9 +280,26 @@ public class HandRadial : MonoBehaviour
                             Instantiate(BasketBall, ballSpawn, new Quaternion(0, 0, 0, 0));
                             spawn = true;
                         }
+                    }
+                }
+                else if (hit.collider.gameObject.tag == "BowlingPin")
+                {
+                    lastObj = hit.collider.gameObject;
+                    if (lastObj != null)
+                    {
+                        lastObj.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+                    }
+                    hit.collider.gameObject.transform.localScale = new Vector3(0.04f, 0.04f, 0.04f);
 
-                        Debug.Log("bowlingball");
-
+                    if (grabRt)
+                    {
+                        if (spawn == false)
+                        {
+                            //Instantiate(BasketBall, ballSpawn, new Quaternion(0, 0, 0, 0));
+                            spScript.removePins();
+                            spScript.spawnPins();
+                            spawn = true;
+                        }
                     }
                 }
                 //else
@@ -264,17 +322,80 @@ public class HandRadial : MonoBehaviour
                         lastObj.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
                     else if (lastObj.tag == "BasketBall")
                         lastObj.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
+                    else if (lastObj.tag == "BowlingPin")
+                        lastObj.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
                     lastObj = null;
                 }
 
             }
 
         }
+        else if (grabLt)
+        {
+            showCursor();
+            //if (grabRt)
+            //{
+            //    Debug.Log("Before tele");
+            //    teleport();
+            //}
+        }
         else
         {
-            selector.SetActive(true);
+            //selector.SetActive(true);
             lzr.enabled = false;
-            gogo();
+            if (grabB)
+            {
+                gogo();
+            }
+            else
+            {
+                regularMove();
+            }
+            
         }
+    }
+
+    void showCursor()
+    {
+        Ray ray = new Ray(cam.rightHandAnchor.position, cam.rightHandAnchor.rotation * Vector3.forward);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity))
+        {
+            if (hit.collider.gameObject.tag == "Ground")
+            {
+                tpCursor.SetActive(true);
+                tpCursor.transform.position = hit.point;
+                tpCursor.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+                //if (grabRt)
+                //{
+                //    player.transform.position = hit.point + new Vector3(0, 1, 0);
+                //}
+            }
+            else
+            {
+                tpCursor.SetActive(false);
+            }
+        }
+    }
+
+    void teleport()
+    {
+        Ray ray = new Ray(cam.rightHandAnchor.position, cam.rightHandAnchor.rotation * Vector3.forward);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity))
+        {
+            if (hit.collider.gameObject.tag == "Ground")
+            {
+                Debug.Log("next tele");
+                player.transform.position = hit.point + new Vector3(0, 1, 0);
+            }
+        }
+        teleported = true;
+    }
+
+    void regularMove()
+    {
+        selector.transform.position = cam.rightHandAnchor.transform.position;
+        selector.transform.rotation = cam.rightHandAnchor.transform.rotation;
     }
 }
