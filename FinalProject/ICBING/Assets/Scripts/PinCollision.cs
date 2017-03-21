@@ -16,6 +16,12 @@ public class PinCollision : MonoBehaviour {
             playAudio.setCrash();
         }
 
+        if (other.gameObject.name.Contains("BasketBall"))
+        {
+            Debug.Log("Crash");
+            playAudio.setCrash();
+        }
+
         //checkReached = true;
         //Debug.Log("collision with: " + other.gameObject.name);
         //if (end == false)

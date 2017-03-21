@@ -14,6 +14,10 @@ public class ResetBall : MonoBehaviour {
             radial.resetBall();
         }
 
+        if (other.gameObject.name.Contains("BasketBall"))
+        {
+            radial.resetBall();
+        }
     }
 
 }

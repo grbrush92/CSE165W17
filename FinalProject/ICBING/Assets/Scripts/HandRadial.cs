@@ -285,7 +285,7 @@ public class HandRadial : MonoBehaviour
                             curBall.GetComponent<Rigidbody>().mass = bowlMass;
                             curBall.transform.localScale = new Vector3(bowlScale, bowlScale, bowlScale);
                             curBall.GetComponent<Rigidbody>().mass = bowlMass;
-                            size.text = bowlScale.ToString();
+                            size.text = Math.Round(bowlScale,2).ToString();
                             mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
                             spawn = true;
                         }
@@ -309,7 +309,7 @@ public class HandRadial : MonoBehaviour
                             curBall.GetComponent<Rigidbody>().mass = basketMass;
                             curBall.transform.localScale = new Vector3(basketScale, basketScale, basketScale);
                             curBall.GetComponent<Rigidbody>().mass = basketMass;
-                            size.text = basketScale.ToString();
+                            size.text = Math.Round(basketScale,2).ToString();
                             mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
                             spawn = true;
                         }
@@ -347,13 +347,13 @@ public class HandRadial : MonoBehaviour
                         if (curBall.name.Contains("BowlingBall"))
                         {
                             bowlScale = curBall.transform.localScale.x;
-                            size.text = bowlScale.ToString();
+                            size.text = Math.Round(bowlScale, 2).ToString();
                             mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
                         }
                         else if (curBall.name.Contains("BasketBall"))
                         {
                             basketScale = curBall.transform.localScale.x;
-                            size.text = basketScale.ToString();
+                            size.text = Math.Round(basketScale, 2).ToString();
                             mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
                         }
 
@@ -375,14 +375,14 @@ public class HandRadial : MonoBehaviour
                         {
                             bowlScale = curBall.transform.localScale.x + 0.1f;
                             curBall.transform.localScale = new Vector3(bowlScale, bowlScale, bowlScale);
-                            size.text = bowlScale.ToString();
+                            size.text = Math.Round(bowlScale, 2).ToString();
                             //mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
                         }
                         else if (curBall.name.Contains("BasketBall"))
                         {
                             basketScale = curBall.transform.localScale.x + 0.1f;
                             curBall.transform.localScale = new Vector3(basketScale, basketScale, basketScale);
-                            size.text = basketScale.ToString();
+                            size.text = Math.Round(basketScale, 2).ToString();
                             //mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
                         }
 
@@ -399,16 +399,22 @@ public class HandRadial : MonoBehaviour
 
                         if (curBall.name.Contains("BowlingBall"))
                         {
-                            bowlScale = curBall.transform.localScale.x - 0.1f;
+                            if ((curBall.transform.localScale.x - 0.1f) <= 0.1f)
+                                bowlScale = curBall.transform.localScale.x;
+                            else
+                                bowlScale = curBall.transform.localScale.x - 0.1f;
                             curBall.transform.localScale = new Vector3(bowlScale, bowlScale, bowlScale);
-                            size.text = bowlScale.ToString();
+                            size.text = Math.Round(bowlScale, 2).ToString();
                             //mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
                         }
                         else if (curBall.name.Contains("BasketBall"))
                         {
-                            basketScale = curBall.transform.localScale.x - 0.1f;
+                            if ((curBall.transform.localScale.x - 0.1f) <= 0.1f)
+                                basketScale = curBall.transform.localScale.x;
+                            else
+                                basketScale = curBall.transform.localScale.x - 0.1f;
                             curBall.transform.localScale = new Vector3(basketScale, basketScale, basketScale);
-                            size.text = basketScale.ToString();
+                            size.text = Math.Round(basketScale, 2).ToString();
                             //mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
                         }
 
@@ -584,5 +590,20 @@ public class HandRadial : MonoBehaviour
         curBall.transform.position = ballSpawn;
         curBall.GetComponent<Rigidbody>().velocity = new Vector3(0,0,0);
         curBall.GetComponent<Rigidbody>().angularVelocity = new Vector3(0, 0, 0);
+    }
+
+    public void setLane1()
+    {
+        ballSpawn = new Vector3(-4.7f, 0.3f, -3.5f);
+    }
+
+    public void setLane2()
+    {
+        ballSpawn = new Vector3(0.3f, 0.3f, -3.5f);
+    }
+
+    public void setLane3()
+    {
+        ballSpawn = new Vector3(5.3f, 0.3f, -3.5f);
     }
 }
