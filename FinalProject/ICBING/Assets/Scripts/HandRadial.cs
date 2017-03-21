@@ -39,8 +39,9 @@ public class HandRadial : MonoBehaviour
     private Quaternion lastRotation, currentRotation;
     private float maxCursorDistance = 0.2f;
     GameObject lastObj = null;
-    Vector3 ballSpawn = new Vector3(0.3f, 0.3f, -2);
+    Vector3 ballSpawn = new Vector3(0.3f, 0.3f, -3.5f);
     private GameObject grabbedObj;
+    private GameObject curBall;
     
 
     // Use this for initialization
@@ -49,6 +50,7 @@ public class HandRadial : MonoBehaviour
         lzr.enabled = false;
         tpCursor = Instantiate(cursor);
         tpCursor.SetActive(false);
+        curBall = Instantiate(BowlingBall, ballSpawn, new Quaternion(0, 0, 0, 0));
     }
 
     // Update is called once per frame
@@ -259,7 +261,8 @@ public class HandRadial : MonoBehaviour
                     {
                         if (spawn == false)
                         {
-                            Instantiate(BowlingBall, ballSpawn, new Quaternion(0, 0, 0, 0));
+                            Destroy(curBall);
+                            curBall = Instantiate(BowlingBall, ballSpawn, new Quaternion(0, 0, 0, 0));
                             spawn = true;
                         }
                     }
@@ -277,7 +280,8 @@ public class HandRadial : MonoBehaviour
                     {
                         if (spawn == false)
                         {
-                            Instantiate(BasketBall, ballSpawn, new Quaternion(0, 0, 0, 0));
+                            Destroy(curBall);
+                            curBall = Instantiate(BasketBall, ballSpawn, new Quaternion(0, 0, 0, 0));
                             spawn = true;
                         }
                     }

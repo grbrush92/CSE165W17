@@ -30,16 +30,16 @@ public class SpawnPins : MonoBehaviour {
 
     public void spawnPins()
     {
-        Instantiate(pin, new Vector3(0, 0.2f, 3), new Quaternion(0, 0, 0, 0));
-        Instantiate(pin, new Vector3(.1f, 0.2f, 3.1f), new Quaternion(0, 0, 0, 0));
-        Instantiate(pin, new Vector3(-.1f, 0.2f, 3.1f), new Quaternion(0, 0, 0, 0));
-        Instantiate(pin, new Vector3(0, 0.2f, 3.2f), new Quaternion(0, 0, 0, 0));
-        Instantiate(pin, new Vector3(0.2f, 0.2f, 3.2f), new Quaternion(0, 0, 0, 0));
-        Instantiate(pin, new Vector3(-0.2f, 0.2f, 3.2f), new Quaternion(0, 0, 0, 0));
-        Instantiate(pin, new Vector3(-0.3f, 0.2f, 3.3f), new Quaternion(0, 0, 0, 0));
-        Instantiate(pin, new Vector3(-0.15f, 0.2f, 3.3f), new Quaternion(0, 0, 0, 0));
-        Instantiate(pin, new Vector3(0, 0.2f, 3.3f), new Quaternion(0, 0, 0, 0));
-        Instantiate(pin, new Vector3(0.15f, 0.2f, 3.3f), new Quaternion(0, 0, 0, 0));
-        Instantiate(pin, new Vector3(0.3f, 0.2f, 3.3f), new Quaternion(0, 0, 0, 0));
+        Instantiate(pin, new Vector3(0, 0.35f, 6.0f), new Quaternion(0, 0, 0, 0));
+        Instantiate(pin, new Vector3(.1f, 0.35f, 6.1f), new Quaternion(0, 0, 0, 0));
+        Instantiate(pin, new Vector3(-.1f, 0.35f, 6.1f), new Quaternion(0, 0, 0, 0));
+        Instantiate(pin, new Vector3(0, 0.35f, 6.2f), new Quaternion(0, 0, 0, 0));
+        Instantiate(pin, new Vector3(0.2f, 0.35f, 6.2f), new Quaternion(0, 0, 0, 0));
+        Instantiate(pin, new Vector3(-0.2f, 0.35f, 6.2f), new Quaternion(0, 0, 0, 0));
+        Instantiate(pin, new Vector3(-0.3f, 0.35f, 6.3f), new Quaternion(0, 0, 0, 0));
+        Instantiate(pin, new Vector3(-0.15f, 0.35f, 6.3f), new Quaternion(0, 0, 0, 0));
+        Instantiate(pin, new Vector3(0, 0.35f, 6.3f), new Quaternion(0, 0, 0, 0));
+        Instantiate(pin, new Vector3(0.15f, 0.35f, 6.3f), new Quaternion(0, 0, 0, 0));
+        Instantiate(pin, new Vector3(0.3f, 0.35f, 6.3f), new Quaternion(0, 0, 0, 0));
     }
 }
