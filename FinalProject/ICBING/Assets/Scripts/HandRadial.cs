@@ -18,6 +18,7 @@ public class HandRadial : MonoBehaviour
     public GameObject selector;
     public float selectionRadius;
     public GameObject pallet;
+    public GameObject modMenu;
     public LayerMask grabMask;
     public LineRenderer lzr;
     public GameObject BowlingBall;
@@ -25,6 +26,14 @@ public class HandRadial : MonoBehaviour
     public SpawnPins spScript;
     public GameObject cursor;
     private GameObject tpCursor;
+    private float scaleFactor;
+    private float massFactor;
+    public TextMesh size;
+    public TextMesh mass;
+    private float bowlScale;
+    private float bowlMass;
+    private float basketScale;
+    private float basketMass;
     bool B = false;
     bool Y = false;
     bool Rt = false;
@@ -36,13 +45,15 @@ public class HandRadial : MonoBehaviour
     bool spawn = false;
     bool hover = false;
     bool teleported = false;
+    bool once = false;
     private Quaternion lastRotation, currentRotation;
     private float maxCursorDistance = 0.2f;
     GameObject lastObj = null;
     Vector3 ballSpawn = new Vector3(0.3f, 0.3f, -3.5f);
     private GameObject grabbedObj;
     private GameObject curBall;
-    
+    public Audio playAudio;
+
 
     // Use this for initialization
     void Start()
@@ -51,6 +62,12 @@ public class HandRadial : MonoBehaviour
         tpCursor = Instantiate(cursor);
         tpCursor.SetActive(false);
         curBall = Instantiate(BowlingBall, ballSpawn, new Quaternion(0, 0, 0, 0));
+        bowlScale = curBall.transform.localScale.x;
+        bowlMass = curBall.GetComponent<Rigidbody>().mass;
+        basketScale = 0.2f;
+        basketMass = 2.0f;
+        playAudio.setStart();
+
     }
 
     // Update is called once per frame
@@ -106,6 +123,7 @@ public class HandRadial : MonoBehaviour
         {
             grabY = false;
             pallet.SetActive(false);
+            modMenu.SetActive(false);
         }
 
         if (Rt)
@@ -128,6 +146,7 @@ public class HandRadial : MonoBehaviour
             grabRt = false;
             spawn = false;
             teleported = false;
+            once = false;
         }
 
         if (Lt)
@@ -252,17 +271,22 @@ public class HandRadial : MonoBehaviour
                 {
 
                     lastObj = hit.collider.gameObject;
-                    if (lastObj != null)
-                    {
-                        lastObj.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-                    }
-                    hit.collider.gameObject.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+                    //if (lastObj != null)
+                    //{
+                    //    lastObj.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                    //}
+                    //hit.collider.gameObject.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
                     if (grabRt)
                     {
                         if (spawn == false)
                         {
                             Destroy(curBall);
                             curBall = Instantiate(BowlingBall, ballSpawn, new Quaternion(0, 0, 0, 0));
+                            curBall.GetComponent<Rigidbody>().mass = bowlMass;
+                            curBall.transform.localScale = new Vector3(bowlScale, bowlScale, bowlScale);
+                            curBall.GetComponent<Rigidbody>().mass = bowlMass;
+                            size.text = bowlScale.ToString();
+                            mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
                             spawn = true;
                         }
                     }
@@ -271,17 +295,22 @@ public class HandRadial : MonoBehaviour
                 {
 
                     lastObj = hit.collider.gameObject;
-                    if (lastObj != null)
-                    {
-                        lastObj.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
-                    }
-                    hit.collider.gameObject.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                    //if (lastObj != null)
+                    //{
+                    //    lastObj.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
+                    //}
+                    //hit.collider.gameObject.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
                     if (grabRt)
                     {
                         if (spawn == false)
                         {
                             Destroy(curBall);
                             curBall = Instantiate(BasketBall, ballSpawn, new Quaternion(0, 0, 0, 0));
+                            curBall.GetComponent<Rigidbody>().mass = basketMass;
+                            curBall.transform.localScale = new Vector3(basketScale, basketScale, basketScale);
+                            curBall.GetComponent<Rigidbody>().mass = basketMass;
+                            size.text = basketScale.ToString();
+                            mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
                             spawn = true;
                         }
                     }
@@ -289,11 +318,11 @@ public class HandRadial : MonoBehaviour
                 else if (hit.collider.gameObject.tag == "BowlingPin")
                 {
                     lastObj = hit.collider.gameObject;
-                    if (lastObj != null)
-                    {
-                        lastObj.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
-                    }
-                    hit.collider.gameObject.transform.localScale = new Vector3(0.04f, 0.04f, 0.04f);
+                    //if (lastObj != null)
+                    //{
+                    //    lastObj.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+                    //}
+                    //hit.collider.gameObject.transform.localScale = new Vector3(0.04f, 0.04f, 0.04f);
 
                     if (grabRt)
                     {
@@ -302,8 +331,155 @@ public class HandRadial : MonoBehaviour
                             //Instantiate(BasketBall, ballSpawn, new Quaternion(0, 0, 0, 0));
                             spScript.removePins();
                             spScript.spawnPins();
+                            //curBall = Instantiate(curBall.gameObject, ballSpawn, new Quaternion(0, 0, 0, 0));
                             spawn = true;
                         }
+                    }
+                }
+                else if (hit.collider.gameObject.tag == "Settings")
+                {
+                    if (grabRt && !once)
+                    {
+                        once = true;
+                        pallet.SetActive(false);
+                        modMenu.SetActive(true);
+                        Debug.Log(curBall.name);
+                        if (curBall.name.Contains("BowlingBall"))
+                        {
+                            bowlScale = curBall.transform.localScale.x;
+                            size.text = bowlScale.ToString();
+                            mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
+                        }
+                        else if (curBall.name.Contains("BasketBall"))
+                        {
+                            basketScale = curBall.transform.localScale.x;
+                            size.text = basketScale.ToString();
+                            mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
+                        }
+
+                        //lastScale = curBall.transform.localScale.x;
+                        //size.text = ((int)lastScale).ToString();
+                        //mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
+                    }
+                    
+                }
+                else if (hit.collider.gameObject.tag == "ScaleUp")
+                {
+                    //Debug.Log("size up");
+                    if (grabRt && !once)
+                    {
+                        //Debug.Log("triggered");
+                        once = true;
+
+                        if (curBall.name.Contains("BowlingBall"))
+                        {
+                            bowlScale = curBall.transform.localScale.x + 0.1f;
+                            curBall.transform.localScale = new Vector3(bowlScale, bowlScale, bowlScale);
+                            size.text = bowlScale.ToString();
+                            //mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
+                        }
+                        else if (curBall.name.Contains("BasketBall"))
+                        {
+                            basketScale = curBall.transform.localScale.x + 0.1f;
+                            curBall.transform.localScale = new Vector3(basketScale, basketScale, basketScale);
+                            size.text = basketScale.ToString();
+                            //mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
+                        }
+
+                        //lastScale = curBall.transform.localScale.x + 0.1f;
+                        //curBall.transform.localScale = new Vector3(lastScale, lastScale, lastScale);
+                        //size.text = lastScale.ToString();
+                    }
+                }
+                else if (hit.collider.gameObject.tag == "ScaleDown")
+                {
+                    if (grabRt && !once)
+                    {
+                        once = true;
+
+                        if (curBall.name.Contains("BowlingBall"))
+                        {
+                            bowlScale = curBall.transform.localScale.x - 0.1f;
+                            curBall.transform.localScale = new Vector3(bowlScale, bowlScale, bowlScale);
+                            size.text = bowlScale.ToString();
+                            //mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
+                        }
+                        else if (curBall.name.Contains("BasketBall"))
+                        {
+                            basketScale = curBall.transform.localScale.x - 0.1f;
+                            curBall.transform.localScale = new Vector3(basketScale, basketScale, basketScale);
+                            size.text = basketScale.ToString();
+                            //mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
+                        }
+
+                        //lastScale = curBall.transform.localScale.x - 0.1f;
+                        //curBall.transform.localScale = new Vector3(lastScale, lastScale, lastScale);
+                        //size.text = lastScale.ToString();
+                    }
+                }
+                else if (hit.collider.gameObject.tag == "MassUp")
+                {
+                    if (grabRt && !once)
+                    {
+                        once = true;
+
+                        if (curBall.name.Contains("BowlingBall"))
+                        {
+                            bowlMass = curBall.GetComponent<Rigidbody>().mass + 1f;
+                            //curBall.transform.localScale = new Vector3(bowlScale, bowlScale, bowlScale);
+                            curBall.GetComponent<Rigidbody>().mass = bowlMass;
+                            //size.text = bowlScale.ToString();
+                            mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
+                        }
+                        else if (curBall.name.Contains("BasketBall"))
+                        {
+                            basketMass = curBall.GetComponent<Rigidbody>().mass + 1f;
+                            //curBall.transform.localScale = new Vector3(bowlScale, bowlScale, bowlScale);
+                            curBall.GetComponent<Rigidbody>().mass = basketMass;
+                            //size.text = basketScale.ToString();
+                            mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
+                        }
+
+                        //lastMass = curBall.GetComponent<Rigidbody>().mass + 1.0f;
+                        //curBall.GetComponent<Rigidbody>().mass = lastMass;
+                        //mass.text = ((int)lastMass).ToString();
+                    }
+                }
+                else if (hit.collider.gameObject.tag == "MassDown")
+                {
+                    if (grabRt && !once)
+                    {
+                        once = true;
+
+                        if (curBall.name.Contains("BowlingBall"))
+                        {
+                            bowlMass = curBall.GetComponent<Rigidbody>().mass - 1f;
+                            //curBall.transform.localScale = new Vector3(bowlScale, bowlScale, bowlScale);
+                            curBall.GetComponent<Rigidbody>().mass = bowlMass;
+                            //size.text = bowlScale.ToString();
+                            mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
+                        }
+                        else if (curBall.name.Contains("BasketBall"))
+                        {
+                            basketMass = curBall.GetComponent<Rigidbody>().mass - 1f;
+                            //curBall.transform.localScale = new Vector3(bowlScale, bowlScale, bowlScale);
+                            curBall.GetComponent<Rigidbody>().mass = basketMass;
+                            //size.text = basketScale.ToString();
+                            mass.text = ((int)curBall.GetComponent<Rigidbody>().mass).ToString();
+                        }
+
+                        //float tempMass = curBall.GetComponent<Rigidbody>().mass - 1.0f;
+                        //curBall.GetComponent<Rigidbody>().mass = lastMass;
+                        //mass.text = ((int)lastMass).ToString();
+                    }
+                }
+                else if (hit.collider.gameObject.tag == "Return")
+                {
+                    if (grabRt && !once)
+                    {
+                        once = true;
+                        pallet.SetActive(true);
+                        modMenu.SetActive(false);
                     }
                 }
                 //else
@@ -322,12 +498,12 @@ public class HandRadial : MonoBehaviour
             {
                 if (lastObj != null)
                 {
-                    if (lastObj.tag == "BowlingBall")
-                        lastObj.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-                    else if (lastObj.tag == "BasketBall")
-                        lastObj.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
-                    else if (lastObj.tag == "BowlingPin")
-                        lastObj.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+                    //if (lastObj.tag == "BowlingBall")
+                    //    lastObj.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                    //else if (lastObj.tag == "BasketBall")
+                    //    lastObj.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
+                    //else if (lastObj.tag == "BowlingPin")
+                    //    lastObj.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
                     lastObj = null;
                 }
 
@@ -391,7 +567,7 @@ public class HandRadial : MonoBehaviour
             if (hit.collider.gameObject.tag == "Ground")
             {
                 Debug.Log("next tele");
-                player.transform.position = hit.point + new Vector3(0, 1, 0);
+                player.transform.position = hit.point + new Vector3(0, 1.5f, 0);
             }
         }
         teleported = true;
@@ -401,5 +577,12 @@ public class HandRadial : MonoBehaviour
     {
         selector.transform.position = cam.rightHandAnchor.transform.position;
         selector.transform.rotation = cam.rightHandAnchor.transform.rotation;
+    }
+
+    public void resetBall()
+    {
+        curBall.transform.position = ballSpawn;
+        curBall.GetComponent<Rigidbody>().velocity = new Vector3(0,0,0);
+        curBall.GetComponent<Rigidbody>().angularVelocity = new Vector3(0, 0, 0);
     }
 }
